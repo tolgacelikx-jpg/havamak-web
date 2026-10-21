@@ -134,6 +134,9 @@ section + section { border-top: 1px solid var(--line); }
 .photo.has { border-style: solid; padding: 8px; background: #ffffff; }
 .card .thumb { margin: -22px -22px 0; aspect-ratio: 16 / 10; background: #ffffff; border-radius: 10px 10px 0 0; border-bottom: 1px solid var(--line); overflow: hidden; }
 .card .thumb img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+.gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; }
+@media (max-width: 640px) { .gallery { grid-template-columns: minmax(0, 1fr); } }
 .install { margin: 0; }
 .install img { width: 100%; max-width: 100%; display: block; border-radius: 10px; border: 1px solid var(--line); }
 .install figcaption { font-size: .85rem; color: var(--muted); margin-top: 8px; }
@@ -225,6 +228,7 @@ const BRANDS = {
     months: "ay", ask: "Teklif iste",
     photoPending: "Seri fotoğrafı eklenecek",
     installCap: "Kompresör, hava tankı ve kurutucu ile örnek basınçlı hava tesisatı",
+    galleryEyebrow: "Tank üstü uygulama örnekleri",
     specsPending: "Çalışma basıncı ve hava debisi gibi teknik değerler model listesinde henüz yok; geldiğinde tabloya eklenecek.",
     aboutTitle: "Hakkımızda",
     about: [
@@ -258,6 +262,7 @@ const BRANDS = {
     months: "months", ask: "Request a quote",
     photoPending: "Series photo to be added",
     installCap: "Example compressed air installation with compressors, air receivers and dryers",
+    galleryEyebrow: "Tank-mounted application examples",
     specsPending: "Working pressure, free air delivery and other technical values are not in the model list yet; they will be added to the table.",
     aboutTitle: "About us",
     about: [
@@ -299,8 +304,8 @@ const hpOf = m => HP_UNCONFIRMED_KW.includes(m.kw) ? null : m.hp;
 
 // Fotoğraflar Drive'dan; her markada yalnızca kendi logolu fotoğrafı gösterilir. Olmayan seride yer tutucu kalır.
 const PHOTOS = {
-  havamak: { install: "foto/havamak-tesisat.jpg", "alpha": "foto/havamak-alpha.jpg", "magnet": "foto/havamak-magnet.jpg" },
-  eurorotor: { install: "foto/eurorotor-tesisat.jpg", "alpha": "foto/eurorotor-alpha.jpg", "magnet": "foto/eurorotor-magnet.jpg", "gamma": "foto/eurorotor-gamma.jpg", "dry": "foto/eurorotor-dry.jpg" },
+  havamak: { gallery: ["foto/havamak-paket-1.jpg", "foto/havamak-paket-2.jpg", "foto/havamak-paket-3.jpg"], install: "foto/havamak-tesisat.jpg", "alpha": "foto/havamak-alpha.jpg", "magnet": "foto/havamak-magnet.jpg" },
+  eurorotor: { gallery: ["foto/eurorotor-paket-1.jpg", "foto/eurorotor-paket-2.jpg", "foto/eurorotor-paket-3.jpg"], install: "foto/eurorotor-tesisat.jpg", "alpha": "foto/eurorotor-alpha.jpg", "magnet": "foto/eurorotor-magnet.jpg", "gamma": "foto/eurorotor-gamma.jpg", "dry": "foto/eurorotor-dry.jpg" },
 };
 const photoOf = key => PHOTOS[brand][key];
 
@@ -368,6 +373,10 @@ function pHome(t) {
   </div></section>
   <section class="band"><div class="wrap facts">${facts}</div></section>
   <section><div class="wrap"><figure class="install"><img src="${photoOf("install")}" alt="${esc(t.installCap)}" loading="lazy"><figcaption>${esc(t.installCap)}</figcaption></figure></div></section>
+  <section><div class="wrap stack">
+    <span class="eyebrow">${esc(t.galleryEyebrow)}</span>
+    <div class="gallery">${PHOTOS[brand].gallery.map(src => `<img src="${src}" alt="${esc(t.galleryEyebrow)}" loading="lazy">`).join("")}</div>
+  </div></section>
   <section><div class="wrap stack">
     <span class="eyebrow">${esc(t.seriesEyebrow)}</span>
     <h2>${esc(t.seriesTitle)}</h2>
