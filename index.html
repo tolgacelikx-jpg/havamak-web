@@ -130,6 +130,13 @@ section + section { border-top: 1px solid var(--line); }
 .crumbs { font-size: .85rem; color: var(--muted); }
 .crumbs a { color: var(--muted); }
 .series-head { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.photo img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+.photo.has { border-style: solid; padding: 8px; background: #ffffff; }
+.card .thumb { margin: -22px -22px 0; aspect-ratio: 16 / 10; background: #ffffff; border-radius: 10px 10px 0 0; border-bottom: 1px solid var(--line); overflow: hidden; }
+.card .thumb img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+.install { margin: 0; }
+.install img { width: 100%; max-width: 100%; display: block; border-radius: 10px; border: 1px solid var(--line); }
+.install figcaption { font-size: .85rem; color: var(--muted); margin-top: 8px; }
 .photo { aspect-ratio: 4 / 3; max-width: 100%; border: 1px dashed var(--line); border-radius: 10px; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: .85rem; padding: 16px; background: var(--surface); }
 .subtitle { font-size: 1.15rem; font-weight: 500; color: var(--accent); }
 .bullets { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
@@ -217,6 +224,7 @@ const BRANDS = {
     th: { model: "Model", code: "Kod", kw: "Güç (kW)", hp: "Güç (HP)", drive: "Sürücü", service: "Bakım aralığı", ask: "" },
     months: "ay", ask: "Teklif iste",
     photoPending: "Seri fotoğrafı eklenecek",
+    installCap: "Kompresör, hava tankı ve kurutucu ile örnek basınçlı hava tesisatı",
     specsPending: "Çalışma basıncı ve hava debisi gibi teknik değerler model listesinde henüz yok; geldiğinde tabloya eklenecek.",
     aboutTitle: "Hakkımızda",
     about: [
@@ -249,6 +257,7 @@ const BRANDS = {
     th: { model: "Model", code: "Code", kw: "Power (kW)", hp: "Power (HP)", drive: "Drive", service: "Service interval", ask: "" },
     months: "months", ask: "Request a quote",
     photoPending: "Series photo to be added",
+    installCap: "Example compressed air installation with compressors, air receivers and dryers",
     specsPending: "Working pressure, free air delivery and other technical values are not in the model list yet; they will be added to the table.",
     aboutTitle: "About us",
     about: [
@@ -287,6 +296,13 @@ const PAGE_TEXT = {
 // 132 kW ve 160 kW modellerde HP değeri seriler arasında çelişiyor (175/180, 215/220); teyit gelene kadar gösterilmez.
 const HP_UNCONFIRMED_KW = [132, 160];
 const hpOf = m => HP_UNCONFIRMED_KW.includes(m.kw) ? null : m.hp;
+
+// Fotoğraflar Drive'dan; her markada yalnızca kendi logolu fotoğrafı gösterilir. Olmayan seride yer tutucu kalır.
+const PHOTOS = {
+  havamak: { install: "foto/havamak-tesisat.jpg", "alpha": "foto/havamak-alpha.jpg", "magnet": "foto/havamak-magnet.jpg" },
+  eurorotor: { install: "foto/eurorotor-tesisat.jpg", "alpha": "foto/eurorotor-alpha.jpg", "magnet": "foto/eurorotor-magnet.jpg", "gamma": "foto/eurorotor-gamma.jpg", "dry": "foto/eurorotor-dry.jpg" },
+};
+const photoOf = key => PHOTOS[brand][key];
 
 const slug = s => s.toLowerCase().replace(/\s+/g, "-");
 const SERIES = DATA.series.map(s => ({ ...s, slug: slug(s.name), models: DATA.models.filter(m => m.series === s.name) }));
@@ -328,7 +344,9 @@ function seriesCard(s, t) {
   const kws = s.models.map(m => m.kw).filter(Boolean);
   const range = kws.length ? `<span><span class="mono">${fmt(Math.min(...kws), t.lang)}–${fmt(Math.max(...kws), t.lang)}</span> kW</span>` : "";
   const drives = [...new Set(s.models.map(m => m.drive).filter(Boolean))].map(d => t.drive[d]).join(", ");
+  const ph = photoOf(s.slug);
   return `<a class="card" href="#${brand}-${s.slug}" data-go="${s.slug}">
+    ${ph ? `<div class="thumb"><img src="${ph}" alt="${esc(s.name)}" loading="lazy"></div>` : ""}
     <span><span class="tag">${esc(t.cat[s.category])}</span></span>
     <h3>${esc(s.name)}</h3>
     <div class="meta"><span><span class="mono">${s.models.length}</span> ${t.models}</span>${range}${drives ? `<span>${esc(drives)}</span>` : ""}</div>
@@ -349,6 +367,7 @@ function pHome(t) {
     ${rangeChart(t)}
   </div></section>
   <section class="band"><div class="wrap facts">${facts}</div></section>
+  <section><div class="wrap"><figure class="install"><img src="${photoOf("install")}" alt="${esc(t.installCap)}" loading="lazy"><figcaption>${esc(t.installCap)}</figcaption></figure></div></section>
   <section><div class="wrap stack">
     <span class="eyebrow">${esc(t.seriesEyebrow)}</span>
     <h2>${esc(t.seriesTitle)}</h2>
@@ -394,7 +413,7 @@ function pSeries(s, t) {
         <p>${esc(text)}</p>
         <ul class="bullets">${range ? `<li>${range}</li>` : ""}${pt.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>
       </div>
-      <div class="photo">${esc(t.photoPending)}</div>
+      ${photoOf(s.slug) ? `<div class="photo has"><img src="${photoOf(s.slug)}" alt="${esc(s.name)}"></div>` : `<div class="photo">${esc(t.photoPending)}</div>`}
     </div>
     <h2>${esc(t.allModels)} <span class="mono" style="font-size:.6em;color:var(--muted)">${s.models.length}</span></h2>
     <div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>
